@@ -22,7 +22,9 @@ bool setMode = false;       // Initialize set mode as false state, so that true 
 
 // Stopwath variables
 unsigned long swLastTime = 0;
+int swHundredsthSecs = 0;
 int swSeconds = 0;
+int swMinutes = 0;
 bool swScreen = false;
 int swState = 0;        // 0 = idle; 1 = running; 2 = stopped
 
@@ -63,13 +65,14 @@ void handleButtons() {
 
         if (!swScreen) {
             setMode = !setMode;
-
+            
+            // Time does not run when in set mode
             if (setMode) {
                 lcd.setCursor(0, 0);
                 lcd.print("SET UP");
             } else {
                 lcd.setCursor(0, 0);
-                lcd.print("      ");
+                lcd.print("      ");    // Run time when not in set mode
             }
         } else {
             if (swState == 0) {
@@ -79,9 +82,12 @@ void handleButtons() {
                 swState = 2;
             } else {
                 swState = 0;
+                swHundredsthSecs= 0;
                 swSeconds = 0;
-                lcd.setCursor(23, 0);
-                lcd.print("00");
+                swMinutes = 0;
+                lcd.setCursor(20, 0);
+                lcd.print("00:00:00");
+                
             }
         }
     }
@@ -107,7 +113,7 @@ void handleButtons() {
     }
 }
 
-void updateDisplay() {
+void updateWatch() {
     // Set the SECONDS position on the display
     lcd.setCursor(13, 0);
     if (seconds < 10) {
@@ -115,8 +121,7 @@ void updateDisplay() {
     }
     lcd.print(seconds);
 
-    // Set the separator position between seconds and minutes
-    lcd.setCursor(12, 0);
+    lcd.setCursor(12, 0); // Set the separator position between seconds and minutes
     lcd.print(":");
 
     // Set the MINUTES position on the display
@@ -126,8 +131,7 @@ void updateDisplay() {
     }
     lcd.print(minutes);
 
-    // Set the separator position between the minutes and hours
-    lcd.setCursor(9, 0);
+    lcd.setCursor(9, 0); // Set the separator position between the minutes and hours
     lcd.print(":");
 
     // Set the HOURS position on the display
@@ -136,6 +140,36 @@ void updateDisplay() {
         lcd.print("0");
     }
     lcd.print(hours);
+}
+
+void updateStopWatch() {
+    // Set SW MINUTES position
+    lcd.setCursor(20, 0);
+    if (swMinutes < 10) {
+        lcd.print("0");
+    }
+    lcd.print(swMinutes);
+
+    lcd.setCursor(22, 0); // Set SEPARATOR position between swMinutes and swSeconds
+    lcd.print(":");
+
+    // Set SW SECONDS position
+    lcd.setCursor(23, 0);
+    if (swSeconds < 10) {
+        lcd.print("0");
+    }
+    lcd.print(swSeconds);
+
+    lcd.setCursor(25, 0);
+    lcd.print(":");     // Set SEPARATOR between swSeconds and swHundredsthSecs
+
+    // Set SW HUNDREDSTH of Secs position
+    lcd.setCursor(26, 0);
+    if (swHundredsthSecs < 10) {
+        lcd.print("0");
+    }
+    lcd.print(swHundredsthSecs);
+
 }
 
 void setup() {
@@ -165,7 +199,6 @@ void loop() {
         handleButtons();
 
         // Run time when not in set mode
-
         if (!setMode) {
             seconds++;
 
@@ -183,7 +216,7 @@ void loop() {
                 hours = 0;
             }
         }
-        updateDisplay();   
+        updateWatch();   
     }
 
     int readBtnRight = digitalRead(btnRight);
@@ -203,16 +236,33 @@ void loop() {
     // Starts counter only when swState == 1 (running)
     if (swState == 1) {
         unsigned long swCurrrentTime = millis();
-        // 100 - 0 >= 1000: false
-        // 1100 - 0 >= 1000: true, then enters in this condition
-        if (swCurrrentTime - swLastTime >= interval) {
+        // Stop watch shows MIN:SECS:HUNDSECS: 
+        // 1 sec = 100 hundreth of secs
+        // 100 hundreth of secs = 10 miliseconds
+        // 1 sec = 1000 miliseconds
+        // 10 milisecs - 0 last time >= 10: false
+        // 11 milisecs - 0 last time >= 10: true, then enters in this condition
+        // 21 milisecs - 11 last time >= 10: true, then enters in this condition
+        if (swCurrrentTime - swLastTime >= 10) {
             swLastTime = swCurrrentTime;        // 0 becomes 1100
-            swSeconds++;                        // 1 sec
-            lcd.setCursor(23, 0);
-            if (swSeconds < 10) {
-                lcd.print("0");
+            
+            swHundredsthSecs++;                 // 1 hudredth of seconds
+            
+            if (swHundredsthSecs >= 100) {
+                swSeconds++;            // Add 1 sec when swHundredth of secs reaches 100 hundredth of secs
+                swHundredsthSecs = 0;   // Return swHundredth of secs to 0
             }
-            lcd.print(swSeconds);
+
+            if (swSeconds >= 60 ) {
+                swMinutes++;            // Add 1 min when swSeconds reaches 60 secs
+                swSeconds = 0;          // Return swSeconds to 0
+            }
+
+            if (swMinutes >= 60) {
+                swMinutes = 0;          // Return minutes to 0 when swMinutes reaches 0  
+            }
+            
+            updateStopWatch();
         }
     }
 
