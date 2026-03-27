@@ -7,16 +7,24 @@ const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
 // Create LCD objects with pins defined above
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
+// Watch variables
 const int btnSetMode = 6; 
 const int btnMin = 7;      
 const int btnHour = 8;
 const int btnLeft = 9;
 const int btnRight = 10;
 
+// Button state variables
 bool lastBtnMode = false; 
 bool lastBtnMin = false;
 bool lastBtnHour = false;    
 bool setMode = false;       // Initialize set mode as false state, so that true is reverted (using !setMode) when the set mode button mode is pressed. 
+
+// Stopwath variables
+unsigned long swLastTime = 0;
+int swSeconds = 0;
+bool swScreen = false;
+int swState = 0;        // 0 = idle; 1 = running; 2 = stopped
 
 // Set up time starting in 0
 int seconds = 0;
@@ -53,19 +61,33 @@ void handleButtons() {
     // SET MODE BUTTON:
     if (readButton(btnSetMode, lastBtnMode)) {
 
-        setMode = !setMode;
+        if (!swScreen) {
+            setMode = !setMode;
 
-        if (setMode) {
-            lcd.setCursor(0, 0);
-            lcd.print("SET UP");
+            if (setMode) {
+                lcd.setCursor(0, 0);
+                lcd.print("SET UP");
+            } else {
+                lcd.setCursor(0, 0);
+                lcd.print("      ");
+            }
         } else {
-            lcd.setCursor(0, 0);
-            lcd.print("      ");
+            if (swState == 0) {
+                swState = 1;
+                swLastTime = millis();
+            } else if (swState == 1) {
+                swState = 2;
+            } else {
+                swState = 0;
+                swSeconds = 0;
+                lcd.setCursor(23, 0);
+                lcd.print("00");
+            }
         }
     }
 
     // Process minutes/hours button only when SetMode == true
-    if (setMode) {
+    if (setMode && !swScreen) {
         // MINUTES BUTTON
         if (readButton(btnMin, lastBtnMin)) {
             minutes++;
@@ -171,16 +193,33 @@ void loop() {
             lcd.scrollDisplayRight();
             delay(50);
         }
+        swScreen = true;        // LCD is in the stop watch screen
     }
 
+    // StopWatch
     lcd.setCursor(16, 0);
-    lcd.print(" StopWatch: ");
-    lcd.setCursor(28, 0);
-    lcd.print("28");
+    lcd.print(" SW ");
+
+    // Starts counter only when swState == 1 (running)
+    if (swState == 1) {
+        unsigned long swCurrrentTime = millis();
+        // 100 - 0 >= 1000: false
+        // 1100 - 0 >= 1000: true, then enters in this condition
+        if (swCurrrentTime - swLastTime >= interval) {
+            swLastTime = swCurrrentTime;        // 0 becomes 1100
+            swSeconds++;                        // 1 sec
+            lcd.setCursor(23, 0);
+            if (swSeconds < 10) {
+                lcd.print("0");
+            }
+            lcd.print(swSeconds);
+        }
+    }
 
     int readBtnLeft = digitalRead(btnLeft);
 
     if (readBtnLeft == 0) {
         lcd.home();
-        }
+        swScreen = false;       // LCD left stopwatch screen and return to watch screen
+    }
 }
