@@ -8,9 +8,9 @@ const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
 // Watch variables
-const int btnSetMode = 6; 
+const int btnSetMode = 8; 
 const int btnMin = 7;      
-const int btnHour = 8;
+const int btnHour = 6;
 const int btnLeft = 9;
 const int btnRight = 10;
 
@@ -75,6 +75,8 @@ void handleButtons() {
                 lcd.print("      ");    // Run time when not in set mode
             }
         } else {
+            lcd.setCursor(20, 0);
+            lcd.print("00:00:00");
             if (swState == 0) {
                 swState = 1;
                 swLastTime = millis();
