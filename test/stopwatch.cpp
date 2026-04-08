@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <LiquidCrystal.h>
 
-// Setting up lcd pns (RS, EN, D4, D5, D6, D7)
+// Setting up lcd pins (RS, EN, D4, D5, D6, D7)
 //const = used for variable that will never change
 const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
 // Create LCD objects with pins defined above
