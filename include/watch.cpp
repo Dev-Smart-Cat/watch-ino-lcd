@@ -42,4 +42,17 @@ int hours = 0;
 const unsigned long interval = 1000;    // Value to compare the result between current time and last time and increment time when the result is >= this value
 unsigned long lastTime = 0;             // Value that initializes the time
 
+// Function to return bool value to set the button state
+bool readButton(int pin, bool &lastState) {
+    // Check the button state:
+    // HIGH = true = 1 = not pressed
+    // LOW = false = 0 = pressed
+    bool currentState = digitalRead(pin);
+    // This condition is satified when one of the buttons state 
+    // (set mode, min, hours) is pressed
+    if (currentState != lastState && currentState == LOW) {
+        
+    }
+}
+
 
