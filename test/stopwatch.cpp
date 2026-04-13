@@ -11,7 +11,7 @@ LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 const int btnSetMode = 8; 
 const int btnMin = 7;      
 const int btnHour = 6;
-const int btnLeft = 9;
+const int btnHome = 9;
 const int btnRight = 10;
 
 // Button state variables
@@ -89,7 +89,6 @@ void handleButtons() {
                 swMinutes = 0;
                 lcd.setCursor(20, 0);
                 lcd.print("00:00:00");
-                
             }
         }
     }
@@ -174,6 +173,34 @@ void updateStopWatch() {
 
 }
 
+void scrollHome() {
+
+    int readBtnLeft = digitalRead(btnHome);  
+    
+    // Condition to confirm when the button is pressed
+    if (readBtnLeft == 0) {
+        lcd.home();             // Return to watch screen
+        swScreen = false;        // set to false to indicate the stopwatch was left and return to watch screen (main screen)
+    }
+}
+
+void scrollRight() {
+
+    int readBtnRight = digitalRead(btnRight);
+
+    if (readBtnRight == 0) {
+        for (int posit = 0; posit < 25; posit++) {
+            lcd.scrollDisplayRight();
+            delay(50);
+        }
+        swScreen = true;        // set to true to indicate the stopwatch screen is active
+    }
+
+    // StopWatch screen
+    lcd.setCursor(16, 0);
+    lcd.print(" SW ");
+}
+
 void setup() {
 
   // col, line
@@ -185,13 +212,13 @@ void setup() {
   pinMode(btnMin, INPUT_PULLUP);
   pinMode(btnHour, INPUT_PULLUP);
   pinMode(btnSetMode, INPUT_PULLUP);
-  pinMode(btnLeft, INPUT_PULLUP);
+  pinMode(btnHome, INPUT_PULLUP);
   pinMode(btnRight, INPUT_PULLUP);
 
 }
 
 void loop() {
-
+    
     unsigned long currentTime = millis();
 
     if (currentTime - lastTime >= interval) {
@@ -219,21 +246,9 @@ void loop() {
             }
         }
         updateWatch();   
-    }
+    }    
 
-    int readBtnRight = digitalRead(btnRight);
-
-    if (readBtnRight == 0) {
-        for (int posCounter = 0; posCounter < 25; posCounter++) {
-            lcd.scrollDisplayRight();
-            delay(50);
-        }
-        swScreen = true;        // LCD is in the stop watch screen
-    }
-
-    // StopWatch
-    lcd.setCursor(16, 0);
-    lcd.print(" SW ");
+    scrollRight();   
 
     // Starts counter only when swState == 1 (running)
     if (swState == 1) {
@@ -268,10 +283,6 @@ void loop() {
         }
     }
 
-    int readBtnLeft = digitalRead(btnLeft);
+    scrollHome();
 
-    if (readBtnLeft == 0) {
-        lcd.home();
-        swScreen = false;       // LCD left stopwatch screen and return to watch screen
-    }
 }

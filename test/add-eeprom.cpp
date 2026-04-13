@@ -32,7 +32,7 @@ LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 // EEPROM addres stuck at 0 position
 const int EEPROM_ADDR = 0;
 
-unsigned long startSavedTime = 0;             // Stores the time value read from EEPROm on start up, used as the time offset. 
+unsigned long startSavedTime = 0;             // Stores the time value read from EEPROM on start up, used as the time offset. 
 unsigned long lastSavedTime = 0;              // After starting the loop, the startSavedTime value becomes last time
 const unsigned long interval = 1000;          // Value to compare the result between current time and last time, and increment time when the result is >= the interval 
 
