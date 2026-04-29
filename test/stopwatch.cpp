@@ -33,10 +33,10 @@ int seconds = 0;
 int minutes = 0;
 int hours = 0;
 
-const unsigned long interval = 1000;
+const unsigned long interval = 1000;    // Value to compare how many time passed (curretTime - wLastTime) and add seconds.  
 unsigned long lastTime = 0;
 
-// Function to return bool value to set the button stated
+// Function to return bool value to set the button state
 bool readButton(int pin, bool &lastState) {
 
     // Check the button state:
@@ -82,9 +82,9 @@ void handleButtons() {
                 swLastTime = millis();
             } else if (swState == 1) {
                 swState = 2;
-            } else {
+            } else {                    // When 0 state return all stopwatch variables to 0
                 swState = 0;
-                swHundredsthSecs= 0;
+                swHundredsthSecs = 0;
                 swSeconds = 0;
                 swMinutes = 0;
                 lcd.setCursor(20, 0);
@@ -206,7 +206,7 @@ void setup() {
   // col, line
   lcd.begin(16, 2);
   lcd.clear();
-  // INPUT_PULLUP
+  // INPUT_PULLUP for push buttons work in the inversed way: 
   // HIGH = true = 1 = not pressed
   // LOW = false = 0 = pressed
   pinMode(btnMin, INPUT_PULLUP);
@@ -218,6 +218,8 @@ void setup() {
 }
 
 void loop() {
+
+    // APPROCH WITHOUT EEPROM
     
     unsigned long currentTime = millis();
 
@@ -246,7 +248,8 @@ void loop() {
             }
         }
         updateWatch();   
-    }    
+    }
+      
 
     scrollRight();   
 
@@ -254,12 +257,12 @@ void loop() {
     if (swState == 1) {
         unsigned long swCurrrentTime = millis();
         // Stop watch shows MIN:SECS:HUNDSECS: 
-        // 1 sec = 100 hundreth of secs
-        // 100 hundreth of secs = 10 miliseconds
-        // 1 sec = 1000 miliseconds
-        // 10 milisecs - 0 last time >= 10: false
-        // 11 milisecs - 0 last time >= 10: true, then enters in this condition
-        // 21 milisecs - 11 last time >= 10: true, then enters in this condition
+        // 1 second = 100 hundredth of seconds
+        // 1 hundredth of seconds= 10 milliseconds
+        // 1 sec = 1000 milliseconds
+        // 10 milliseconds - 0 last time >= 10: false
+        // 11 milliseconds - 0 last time >= 10: true, then enters in this condition
+        // 21 milliseconds - 11 last time >= 10: true, then enters in this condition
         if (swCurrrentTime - swLastTime >= 10) {
             swLastTime = swCurrrentTime;        // 0 becomes 1100
             
